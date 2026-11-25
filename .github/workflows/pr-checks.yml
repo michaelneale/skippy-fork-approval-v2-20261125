@@ -1,0 +1,57 @@
+name: PR checks
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  pull-requests: read
+  statuses: write
+concurrency:
+  group: pr-checks-${{ github.event.pull_request.head.sha || (github.event.workflow_run.path == '.github/workflows/fork-native.yml'
+    && github.event.workflow_run.display_title) || github.event.workflow_run.head_sha || github.event.check_run.head_sha
+    || github.event.sha }}
+  queue: max
+jobs:
+  aggregate:
+    name: Evaluate aggregate PR checks
+    if: github.event_name == 'pull_request_target' || (github.event.workflow_run.path == '.github/workflows/fork-native.yml'
+      && github.event.workflow_run.event == 'workflow_run') || github.event_name == 'check_run' || github.event_name
+      == 'status' || contains(fromJSON('["pull_request", "pull_request_target"]'), github.event.workflow_run.event)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      with:
+        ref: main
+        persist-credentials: false
+    - uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+      env:
+        DEPOT_RUNNERS_ENABLED: ${{ vars.SKIPPY_DEPOT_RUNNERS_ENABLED }}
+      with:
+        script: "await require('./.github/scripts/pr-checks.cjs')({\n  github, context, core, depot: process.env.DEPOT_RUNNERS_ENABLED\
+          \ === 'true'\n});\n"
+'on':
+  pull_request_target:
+    types:
+    - opened
+    - edited
+    - synchronize
+    - reopened
+    - ready_for_review
+  workflow_run:
+    workflows:
+    - CI
+    - CI PR
+    - Documentation
+    - Documentation PR
+    - CI images
+    - CI images PR
+    - Inference qualification
+    - Approved fork CI
+    types:
+    - in_progress
+    - completed
+  check_run:
+    types:
+    - created
+    - completed
+  status: null

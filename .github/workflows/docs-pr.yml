@@ -1,0 +1,12 @@
+name: Documentation PR
+'on':
+  pull_request:
+    paths:
+    - docs-site/**
+permissions:
+  contents: read
+jobs:
+  fixture:
+    runs-on: ubuntu-24.04
+    steps:
+    - run: echo "Unused path-only fixture"

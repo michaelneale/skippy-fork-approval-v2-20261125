@@ -1,0 +1,116 @@
+name: Inference qualification
+'on':
+  pull_request_target:
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - ready_for_review
+    paths:
+    - crates/**
+    - skippy_api/src/**
+    - skippy_api/include/**
+    - skippy_api/CMakeLists.txt
+    - llama_cpp/upstream.txt
+    - llama_cpp/whisper-upstream.txt
+    - llama_cpp/patches/**
+    - tools/process-supervision/**
+    - scripts/automation-run.sh
+    - scripts/inference-*.py
+    - scripts/lib/inference_*.py
+    - scripts/lib/jy_qualification.py
+    - scripts/lib/ci_artifacts.py
+    - scripts/lib/ci_process.py
+    - scripts/artifact-file.sh
+    - scripts/build-llama.sh
+    - scripts/prepare-llama.sh
+    - scripts/prepare-whisper.sh
+    - scripts/cargo-linker*
+    - scripts/lib/cuda-toolkit.sh
+    - scripts/lib/lld.sh
+    - scripts/lib/macos-deployment-target*
+    - .gi/templates.yaml
+    - ci/inference-ladder.json
+    - ci/inference-artifacts.json
+    - ci/inference-quality.json
+    - Cargo.toml
+    - Cargo.lock
+    - .cargo/**
+    - rust-toolchain.toml
+    - Justfile
+    - '!**/*.md'
+    - '!**/*.mdx'
+    - '!**/*.rst'
+    - '!**/*.adoc'
+    - '!**/docs/**'
+    - '!**/tests/**'
+    - '!**/benches/**'
+    - '!**/examples/**'
+    - '!**/fuzz/**'
+    - '!**/tests.rs'
+    - '!**/*_tests.rs'
+    - '!**/tests_*.rs'
+    - '!**/test_support.rs'
+    - '!crates/llama-spec-bench/**'
+    - '!crates/metrics-server/**'
+    - '!crates/skippy-gpu-bench/**'
+    - '!crates/skippy-package-builder/**'
+    - '!crates/skippy-quantize/**'
+    - '!crates/skippy-correctness/**'
+    - '!scripts/inference-render-report.py'
+    - '!scripts/lib/inference_markdown.py'
+    - '!scripts/lib/inference_charts.py'
+    - '!scripts/lib/inference_png.py'
+  workflow_call:
+    inputs:
+      approved_fork_pr:
+        description: PR number supplied by the protected approved-fork controller.
+        type: string
+        default: ''
+      release_candidate:
+        description: Exact version commit staged by the protected Release workflow.
+        type: string
+        default: ''
+    secrets:
+      JIANYANG_INFERENCE_SSH_KEY:
+        required: true
+      HF_TOKEN:
+        description: Hugging Face write token used only by the protected scheduled publisher.
+        required: false
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+jobs:
+  plan:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-24.04
+    steps:
+    - env:
+        EXPECTED: michaelneale/skippy-fork-approval-v2-20261125/.github/workflows/fork-native.yml@refs/heads/main
+      run: 'test "$GITHUB_WORKFLOW_REF" = "$EXPECTED"
+
+        echo "FIXTURE: called inference workflow receives outer protected workflow ref"'
+  qualification:
+    needs: plan
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        row:
+        - qwen35-4b-standalone
+        - qwen3-coder-30b-a3b-standalone
+        - qwen3-coder-30b-a3b-split
+        - qwen36-35b-a3b-standalone
+        - qwen36-35b-a3b-split
+        - qwen38-flash-next-standalone
+        - qwen38-flash-next-split
+    name: qualification (${{ matrix.row }})
+    steps:
+    - run: echo "FIXTURE marker only, no hardware qualification"
+  summary:
+    needs:
+    - plan
+    - qualification
+    runs-on: ubuntu-24.04
+    steps:
+    - run: echo "FIXTURE roster completed, NOT hardware evidence"

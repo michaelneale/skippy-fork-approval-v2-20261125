@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "models": [
+    {
+      "id": "qwen35-08b",
+      "model": "Qwen/Qwen3.5-0.8B",
+      "architecture": "hybrid-dense",
+      "pr": false,
+      "split": false
+    },
+    {
+      "id": "qwen35-2b",
+      "model": "Qwen/Qwen3.5-2B",
+      "architecture": "hybrid-dense",
+      "pr": false,
+      "split": false
+    },
+    {
+      "id": "qwen35-4b",
+      "model": "Qwen/Qwen3.5-4B",
+      "architecture": "hybrid-dense",
+      "pr": true,
+      "split": false
+    },
+    {
+      "id": "qwen35-9b",
+      "model": "Qwen/Qwen3.5-9B",
+      "architecture": "hybrid-dense",
+      "pr": false,
+      "split": false
+    },
+    {
+      "id": "qwen38-27b",
+      "model": "Qwen/Qwen3.8-27B",
+      "architecture": "hybrid-dense",
+      "pr": false,
+      "split": true
+    },
+    {
+      "id": "qwen3-coder-30b-a3b",
+      "model": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+      "architecture": "full-attention-moe",
+      "pr": true,
+      "split": true
+    },
+    {
+      "id": "qwen36-35b-a3b",
+      "model": "Qwen/Qwen3.6-35B-A3B",
+      "architecture": "hybrid-moe",
+      "pr": true,
+      "split": true
+    },
+    {
+      "id": "qwen38-flash-next",
+      "model": "Qwen/Qwen3.8-Flash-Next",
+      "architecture": "qwen4-preview",
+      "pr": true,
+      "split": true
+    }
+  ]
+}

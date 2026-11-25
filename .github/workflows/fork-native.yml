@@ -1,0 +1,64 @@
+name: Approved fork CI
+run-name: "${{ github.event.workflow_run.event == 'pull_request' &&\n    github.event.workflow_run.conclusion ==\
+  \ 'success' &&\n    github.event.workflow_run.head_repository.id != github.event.repository.id &&\n    github.event.workflow_run.path\
+  \ == '.github/workflows/ci.yml' &&\n    github.event.workflow_run.head_sha || 'Ignored fork CI trigger' }}"
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  packages: read
+concurrency:
+  group: approved-fork-${{ github.event.workflow_run.path }}-${{ github.event.workflow_run.head_repository.id }}-${{
+    github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+jobs:
+  admission:
+    if: github.repository == 'michaelneale/skippy-fork-approval-v2-20261125' && github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion
+      == 'success' && github.event.workflow_run.head_repository.id != github.event.repository.id && github.event.workflow_run.path
+      == '.github/workflows/ci.yml'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      source: ${{ steps.admit.outputs.source }}
+      number: ${{ steps.admit.outputs.number }}
+      routes: ${{ steps.admit.outputs.routes }}
+      ci: ${{ steps.admit.outputs.ci }}
+      inference: ${{ steps.admit.outputs.inference }}
+    steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      with:
+        ref: main
+        persist-credentials: false
+    - id: admit
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+      with:
+        script: "await require('./.github/scripts/fork-admission.cjs')({\n  github, context, core\n});\n"
+  ci:
+    needs: admission
+    if: needs.admission.outputs.ci == 'true'
+    cache-mode: read
+    uses: ./.github/workflows/ci.yml
+    with:
+      profile: pr
+      source_ref: ${{ needs.admission.outputs.source }}
+      approved_fork_pr: ${{ needs.admission.outputs.number }}
+      approved_fork_routes: ${{ needs.admission.outputs.routes }}
+  inference:
+    needs: admission
+    if: needs.admission.outputs.inference == 'true'
+    permissions:
+      contents: read
+      actions: read
+      pull-requests: write
+      statuses: write
+    uses: ./.github/workflows/inference.yml
+    with:
+      approved_fork_pr: ${{ needs.admission.outputs.number }}
+    secrets:
+      JIANYANG_INFERENCE_SSH_KEY: ${{ secrets.JIANYANG_INFERENCE_SSH_KEY }}
+'on':
+  workflow_run:
+    workflows:
+    - CI
+    types:
+    - completed

@@ -1,0 +1,108 @@
+name: CI
+'on':
+  pull_request:
+    paths:
+    - crates/**
+    - skippy-api-rs/**
+    - skippy_api/**
+    - llama_cpp/**
+    - tools/**
+    - scripts/**
+    - .cargo/**
+    - .github/actions/**
+    - .github/scripts/**
+    - .github/path-filters.yml
+    - .github/actionlint.yaml
+    - .github/workflows/**
+    - Cargo.toml
+    - Cargo.lock
+    - rust-toolchain.toml
+    - Justfile
+    - .python-version
+    - ci/**
+    - .gi/templates.yaml
+    - '!**/*.md'
+    - '!**/*.mdx'
+    - '!**/*.rst'
+    - '!**/*.adoc'
+    - '!**/docs/**'
+    - '!docs-site/**'
+  workflow_call:
+    inputs:
+      profile:
+        type: string
+        default: full
+      cuda_architecture_mode:
+        type: string
+        default: release
+      artifact_scope:
+        type: string
+        default: ci
+      approved_fork_pr:
+        description: PR number supplied only by the protected approved-fork controller.
+        type: string
+        default: ''
+      approved_fork_routes:
+        description: Protected path decisions for the admitted fork head.
+        type: string
+        default: ''
+      source_ref:
+        type: string
+        default: ''
+      candidate_artifact:
+        type: string
+        default: ''
+      candidate_sha:
+        type: string
+        default: ''
+permissions:
+  contents: read
+jobs:
+  producer:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    steps:
+    - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09
+      with:
+        persist-credentials: false
+    - env:
+        DEPOT: ${{ vars.SKIPPY_DEPOT_RUNNERS_ENABLED }}
+      run: 'test -z "$DEPOT"
+
+        cc fixture.c -o /tmp/fork-fixture
+
+        /tmp/fork-fixture
+
+        echo "Fork cannot see base Depot variable; small C test passed"'
+  changes:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    steps:
+    - name: Verify the approved-fork caller and current source
+      id: fork
+      if: github.event_name == 'workflow_run'
+      uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd
+      env:
+        WORKFLOW_REF: ${{ github.workflow_ref }}
+        SOURCE: ${{ inputs.source_ref }}
+        PR: ${{ inputs.approved_fork_pr }}
+        ROUTES: ${{ inputs.approved_fork_routes }}
+      with:
+        script: "if (process.env.WORKFLOW_REF !== 'michaelneale/skippy-fork-approval-v2-20261125/.github/workflows/fork-native.yml@refs/heads/main'\
+          \ ||\n    process.env.SOURCE !== context.payload.workflow_run.head_sha ||\n    !/^[a-f0-9]{40}$/.test(process.env.SOURCE)\
+          \ || !/^[1-9][0-9]*$/.test(process.env.PR)) {\n  throw new Error('Fork CI requires the protected approved-fork\
+          \ controller');\n}\nconst { data: pr } = await github.rest.pulls.get({\n  ...context.repo, pull_number:\
+          \ Number(process.env.PR),\n});\nif (pr.state !== 'open' || pr.head.sha !== process.env.SOURCE) throw new\
+          \ Error('Fork PR head changed');\nconst routes = JSON.parse(process.env.ROUTES);\nfor (const name of ['automation',\
+          \ 'code', 'packages']) {\n  if (typeof routes[name] !== 'boolean') throw new Error('Invalid protected\
+          \ path decisions');\n  core.setOutput(name, String(routes[name]));\n}\n"
+  CI:
+    needs: changes
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-24.04
+    steps:
+    - run: 'echo "FIXTURE: protected reusable CI caller/source verified; NOT native tests"'
