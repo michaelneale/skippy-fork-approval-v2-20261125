@@ -2,31 +2,31 @@ name: CI
 'on':
   pull_request:
     paths:
-    - crates/**
-    - skippy-api-rs/**
-    - skippy_api/**
-    - llama_cpp/**
-    - tools/**
-    - scripts/**
-    - .cargo/**
-    - .github/actions/**
-    - .github/scripts/**
-    - .github/path-filters.yml
-    - .github/actionlint.yaml
-    - .github/workflows/**
-    - Cargo.toml
-    - Cargo.lock
-    - rust-toolchain.toml
-    - Justfile
-    - .python-version
-    - ci/**
-    - .gi/templates.yaml
-    - '!**/*.md'
-    - '!**/*.mdx'
-    - '!**/*.rst'
-    - '!**/*.adoc'
-    - '!**/docs/**'
-    - '!docs-site/**'
+      - 'crates/**'
+      - 'skippy-api-rs/**'
+      - 'skippy_api/**'
+      - 'llama_cpp/**'
+      - 'tools/**'
+      - 'scripts/**'
+      - '.cargo/**'
+      - '.github/actions/**'
+      - '.github/scripts/**'
+      - '.github/path-filters.yml'
+      - '.github/actionlint.yaml'
+      - '.github/workflows/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - 'rust-toolchain.toml'
+      - 'Justfile'
+      - '.python-version'
+      - 'ci/**'
+      - '.gi/templates.yaml'
+      - '!**/*.md'
+      - '!**/*.mdx'
+      - '!**/*.rst'
+      - '!**/*.adoc'
+      - '!**/docs/**'
+      - '!docs-site/**'
   workflow_call:
     inputs:
       profile:

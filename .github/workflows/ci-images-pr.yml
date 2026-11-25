@@ -1,16 +1,7 @@
 name: CI images PR
 'on':
   pull_request:
-    paths:
-    - .github/workflows/ci-images.yml
-    - .github/workflows/ci-images-pr.yml
-    - .github/workflows/ci-image-builds.yml
-    - ci/image-targets.json
-    - ci/Dockerfile*
-    - ci/targets.json
-    - scripts/ci-preserve-cuda-license.sh
-    - rust-toolchain.toml
-    - ci/images.just
+    paths: ['.github/workflows/ci-images.yml', '.github/workflows/ci-images-pr.yml', '.github/workflows/ci-image-builds.yml', 'ci/image-targets.json', 'ci/Dockerfile*', 'ci/targets.json', 'scripts/ci-preserve-cuda-license.sh', 'rust-toolchain.toml', 'ci/images.just']
 permissions:
   contents: read
 jobs:

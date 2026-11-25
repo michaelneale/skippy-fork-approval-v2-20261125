@@ -2,7 +2,7 @@ name: Documentation PR
 'on':
   pull_request:
     paths:
-    - docs-site/**
+      - 'docs-site/**'
 permissions:
   contents: read
 jobs:
